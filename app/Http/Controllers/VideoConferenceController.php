@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\VideoConference;
 use App\Models\TemporaryDownloadLink;
+use App\Mail\SendMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class VideoConferenceController extends Controller
@@ -108,15 +110,40 @@ class VideoConferenceController extends Controller
 
         $current = Carbon::now('Asia/Bangkok')->toDateTimeString();
 
-        $result = VideoConference::where('recording_file_name', $request->recording_file_name)
+        // record to database
+        $updateResult = VideoConference::where('recording_file_name', $request->recording_file_name)
                             ->update([
                                 'recording_file_size' => $request->recording_file_size,
                                 'recording_status' => 'recorded',
                                 'price' => 1,
                                 'recorded_at' => $current
                             ]);
+        /**
+         *  send email
+         */
+         
+        // get email
+        $myConference = VideoConference::where('recording_file_name', $request->recording_file_name)->first();
+        $notifications = $myConference->notifications;
+        
+        if ($notifications) {
+            $emails = [];
+            for ( $i=0; $i < count($notifications) ; $i++ ) { 
+            array_push( $emails, $notifications[$i]['email'] );
+            Mail::to( $notifications[$i]['email'] )
+                    ->send( new SendMail([
+                        'meetingId' => $request->recording_file_name
+                        ]) 
+                    );
+            }
+        }
 
-        return response( $result, 200 );
+        $res = [
+            'updateResult' => $updateResult,
+            'videoConference' => $myConference
+        ];
+
+        return response( $res, 200 );
     }
 
     /**

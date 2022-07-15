@@ -27,4 +27,10 @@ class VideoConference extends Model
     {
         return $this->hasMany(Satisfaction::class);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->select(['id', 'email', 'video_conference_id']);
+        ;
+    }
 }

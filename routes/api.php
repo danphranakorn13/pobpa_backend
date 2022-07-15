@@ -2,9 +2,12 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\VideoConferenceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SatisfactionController;
+use App\Http\Controllers\NotificationController;
+use App\Mail\SendMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,3 +40,15 @@ Route::post( 'payment/send3DSecure', [PaymentController::class, 'send3DSecure'])
 // Satisfaction
 Route::get( 'satisfaction', [SatisfactionController::class, 'index']);
 Route::post( 'satisfaction', [SatisfactionController::class, 'store']);
+
+// Notification
+Route::get( 'notification', [NotificationController::class, 'index']);
+Route::post( 'notification', [NotificationController::class, 'store']);
+
+// mail ( can remove -> just test )
+Route::get('sendMail', function () {
+    // $mail = new SendMail([ 'meetingId' => 'dan' ]);
+    $mail = new SendMail([ 'meetingId' => 'sendmail-15-07-2022-13-18-53-865312' ]);
+    Mail::to('mongkon.du@wolfy-soft.com')->send($mail);
+    return 'succeed';
+});
