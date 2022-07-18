@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use App\Models\VideoConference;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -35,26 +36,38 @@ class NotificationController extends Controller
 
         //check video_conference_id staus
         $videoConference = VideoConference::find( $request->video_conference_id );
-
         if( !$videoConference ){
             return response([
-                'status' => 0,
+                'status' => 'failed',
                 'message' => "video_conference_id: $request->video_conference_id is not found",
+            ], 200 );
+        }
+
+        // check this client's ip address is available
+        $user = User::where( 'public_ip', $request->ip() )->first();
+        if( !$user ){
+            return response( [
+                'status' => 'failed',
+                'message' => "user is not available",
             ], 200 );
         }
         
         $recordingStatus = $videoConference->recording_status;
         if( $recordingStatus !== 'recording'){
             return response([
-                'status' => 0,
+                'status' => 'failed',
                 'message' => "video_conference_id: $request->video_conference_id is not recording",
             ], 200 );
         }
-        $newNotification = Notification::firstOrCreate( $request->all() );
+        $newNotification = Notification::firstOrCreate([
+            'video_conference_id' => $request->video_conference_id,
+            'user_id'=> $user->id,
+            'email'=> $request->email
+        ]);
 
         $res = [
-            'status' => 1,
-            'message' => "succeed",
+            'status' => 'succeed',
+            'message' => "new notification is created",
             'newNotification' => $newNotification
         ];
         return response( $res, 200 );

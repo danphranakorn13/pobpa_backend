@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('satisfactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('video_conference_id');
+            $table->unsignedBigInteger('user_id');                                      // สร้างขึ้นโดย
             $table->string('fullname')->nullable();
             $table->string('email')->nullable();
             $table->enum('ease', [1, 2, 3, 4, 5 ]);                                     // ความง่าย
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->text('comment')->nullable();                                        // ความคิดเห็น
             $table->timestamps();
             $table->foreign('video_conference_id')->references('id')->on('video_conferences');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

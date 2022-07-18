@@ -7,6 +7,7 @@ use App\Http\Controllers\VideoConferenceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SatisfactionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserController;
 use App\Mail\SendMail;
 
 /*
@@ -44,6 +45,13 @@ Route::post( 'satisfaction', [SatisfactionController::class, 'store']);
 // Notification
 Route::get( 'notification', [NotificationController::class, 'index']);
 Route::post( 'notification', [NotificationController::class, 'store']);
+
+// user
+Route::get( 'user', [UserController::class, 'index']);
+Route::post( 'user', [UserController::class, 'store']);
+Route::put( 'userUpdateEmail', [UserController::class, 'updateEmail']);
+Route::get( 'user/{user}', [UserController::class, 'show']);
+Route::get( 'userValidate', [UserController::class, 'UserValidate']);
 
 // mail ( can remove -> just test )
 Route::get('sendMail', function () {

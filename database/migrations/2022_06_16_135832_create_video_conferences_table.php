@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create('video_conferences', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->comment('created by');
             $table->string('recording_file_name')->unique();
+            $table->string('from');
             $table->enum('recording_status', ['preparing', 'recording', 'recorded'] )->default('preparing');
             $table->string('recording_file_size')->nullable();
             $table->unsignedDecimal('price', 10, 2)->nullable();
@@ -23,6 +25,7 @@ return new class extends Migration
             $table->timestamp('recording_at')->nullable();
             $table->timestamp('recorded_at')->nullable();
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 

@@ -12,6 +12,7 @@ class TemporaryDownloadLink extends Model
     protected $fillable = [
         'token',
         'video_conference_id',
+        'user_id',
         'transaction_id',
     ];
 
@@ -23,5 +24,10 @@ class TemporaryDownloadLink extends Model
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

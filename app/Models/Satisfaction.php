@@ -11,6 +11,7 @@ class Satisfaction extends Model
 
     protected $fillable = [
         'video_conference_id',
+        'user_id',
         'fullname',
         'email',
         'ease',
@@ -22,5 +23,10 @@ class Satisfaction extends Model
     public function videoConference()
     {
         return $this->belongsTo(VideoConference::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

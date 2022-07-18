@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VideoConference;
 use App\Models\TemporaryDownloadLink;
+use App\Models\User;
 use App\Mail\SendMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -41,8 +42,18 @@ class VideoConferenceController extends Controller
     {
         //validation
         $request->validate([
-            'room_name'=> 'required'
+            'room_name'=> 'required',
+            'from'=> 'required'
         ]);
+
+        // check this client's ip address is available
+        $user = User::where( 'public_ip', $request->ip() )->first();
+        if( !$user ){
+            return response( [
+                'status' => 'failed',
+                'message' => "user is not available",
+            ], 200 );
+        }
         
         // meeting name format
         $current = Carbon::now('Asia/Bangkok')->format('d-m-Y-H-i-s-u');
@@ -54,7 +65,9 @@ class VideoConferenceController extends Controller
         // if this meetingName is availible
         if(!$recording_file_name){
             $newMeetingName = VideoConference::create([
-                'recording_file_name' => $meetingName
+                'user_id' => $user->id,
+                'recording_file_name' => $meetingName,
+                'from' => $request->from
             ]);
             $response['status'] = 'succeed';
             $response['detail'] = $meetingName;

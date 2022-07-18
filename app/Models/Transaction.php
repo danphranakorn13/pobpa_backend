@@ -11,6 +11,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'video_conference_id',
+        'user_id',
         'price',
         'status',
         'payment_method',
@@ -25,5 +26,10 @@ class Transaction extends Model
     public function temporaryDownloadLink()
     {
         return $this->hasone(TemporaryDownloadLink::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

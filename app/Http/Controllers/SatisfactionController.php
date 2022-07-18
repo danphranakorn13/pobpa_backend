@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Satisfaction;
-// use App\Models\VideoConference;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -24,9 +24,24 @@ class SatisfactionController extends Controller
             'stability'=> 'required|in:1,2,3,4,5',
             'sharpness'=> 'required|in:1,2,3,4,5'
         ]);
+
+        // check this client's ip address is available
+        $user = User::where( 'public_ip', $request->ip() )->first();
+        if( !$user ){
+            return response( [
+                'status' => 'failed',
+                'message' => "user is not available",
+            ], 200 );
+        }
         
         // store new satisfaction to database
-        $newSatisfaction = Satisfaction::create( $request->all() );
+        $newSatisfaction = Satisfaction::create([
+            'user_id'=> $user->id,
+            'video_conference_id'=> $request->video_conference_id,
+            'ease'=> $request->ease,
+            'stability'=> $request->stability,
+            'sharpness'=> $request->sharpness
+        ]);
         
         return response( $newSatisfaction, 200 );
         

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\VideoConference;
 use App\Models\Transaction;
 use App\Models\TemporaryDownloadLink;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
@@ -153,6 +154,15 @@ class PaymentController extends Controller
             'recording_file_name' => 'required',
         ]);
 
+        // check this client's ip address is available
+        $user = User::where( 'public_ip', $request->ip() )->first();
+        if( !$user ){
+            return response( [
+                'status' => 'failed',
+                'message' => "user is not available",
+            ], 200 );
+        }
+
         // check recording_file_name is available
         $videoConference = VideoConference::where('recording_file_name', $request->recording_file_name)->first();
         if(!$videoConference){
@@ -161,6 +171,7 @@ class PaymentController extends Controller
 
         $newTransaction = Transaction::create([
             'video_conference_id'=> $videoConference->id,
+            'user_id'=> $user->id,
             'price'=> $videoConference->price,
             'status'=> 'G',  // C = Created
             'payment_method'=> 'Q' // Q = Qr Cash
@@ -207,6 +218,15 @@ class PaymentController extends Controller
         if(!$currentTransaction){
             return response( "ไม่พบรหัสธุระกรรม $request->transaction_id", 404);
         }
+
+        // check this client's ip address is available
+        $user = User::where( 'public_ip', $request->ip() )->first();
+        if( !$user ){
+            return response( [
+                'status' => 'failed',
+                'message' => "user is not available",
+            ], 200 );
+        }
         
         $secret_key = env('GB_PAYMENT_SECRET_KEY');
 
@@ -234,6 +254,7 @@ class PaymentController extends Controller
                          // insert new transaction to database
                         $newTransaction = Transaction::create([
                             'video_conference_id'=> $currentTransaction->video_conference_id,
+                            'user_id' => $user->id,
                             'price'=> $pobpaResponse['txn']['totalAmount'],
                             'status'=> $pobpaResponse['txn']['status'],
                             'payment_method'=> $pobpaResponse['txn']['paymentType'], // Q = Qr Cash
@@ -241,11 +262,12 @@ class PaymentController extends Controller
                         ]);
                         
                         // generate token
-                        $token =  base64_encode( $newTransaction->id . $newTransaction->video_conference_id . Carbon::now()->timestamp );
+                        $token = base64_encode( $newTransaction->id . $newTransaction->video_conference_id . Carbon::now()->timestamp );
                         
                         // insert newTemporary download link to database
                         $newTemporaryDownloadLink = TemporaryDownloadLink::create([
                             'video_conference_id'=> $newTransaction->video_conference_id,
+                            'user_id' => $user->id,
                             'transaction_id'=> $newTransaction->id,
                             'token'=> $token,
                         ]);
@@ -266,6 +288,7 @@ class PaymentController extends Controller
                     if ( $pobpaStatus == 'A' || $pobpaStatus == 'V' || $pobpaStatus == 'D' || $pobpaStatus == 'S') {
                         $newTransaction = Transaction::create([
                             'video_conference_id'=> $currentTransaction->video_conference_id,
+                            'user_id' => $user->id,
                             'price'=> $currentTransaction->price,
                             'status'=> $pobpaResponse['txn']['status'],
                             'payment_method'=> $pobpaResponse['txn']['paymentType'], // C = Credit Card
@@ -280,6 +303,7 @@ class PaymentController extends Controller
                             // insert newTemporary download link to database
                             $newTemporaryDownloadLink = TemporaryDownloadLink::create([
                                 'video_conference_id'=> $newTransaction->video_conference_id,
+                                'user_id' => $user->id,
                                 'transaction_id'=> $newTransaction->id,
                                 'token'=> $token,
                             ]);

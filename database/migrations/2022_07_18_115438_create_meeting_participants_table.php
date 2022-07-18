@@ -13,16 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('temporary_download_links', function (Blueprint $table) {
+        Schema::create('meeting_participants', function (Blueprint $table) {
             $table->id();
-            $table->string('token')->unique();
             $table->unsignedBigInteger('video_conference_id');
-            $table->unsignedBigInteger('user_id');                                                    // สร้างขึ้นโดย
-            $table->unsignedBigInteger('transaction_id');
+            $table->unsignedBigInteger('user_id');
+            $table->enum('event', ['join', 'leave']);    
             $table->timestamps();
             $table->foreign('video_conference_id')->references('id')->on('video_conferences');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('transaction_id')->references('id')->on('transactions');
         });
     }
 
@@ -33,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('temporary_download_links');
+        Schema::dropIfExists('meeting_participants');
     }
 };

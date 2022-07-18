@@ -16,9 +16,11 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('video_conference_id');
+            $table->unsignedBigInteger('user_id')->comment('created by');
             $table->string('email')->nullable();
             $table->timestamps();
             $table->foreign('video_conference_id')->references('id')->on('video_conferences');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
